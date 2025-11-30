@@ -1,0 +1,45 @@
+@model List<CarritoItem>
+
+<h2 class="text-center">Mi carrito</h2>
+
+@if(Model.Count == 0)
+{
+    <div class="alert alert-info text-center">Tu carrito está vacío</div>
+}
+else
+{
+    decimal total = 0;
+
+    foreach(var item in Model)
+    {
+        total += item.Cantidad * item.Producto!.Precio;
+
+        <div class="card mb-3">
+            <div class="card-body row">
+                <div class="col-md-2">
+                    <img class="img-fluid"
+                         src="@($"{ViewBag.Url}/api/archivos/{item.Producto!.ArchivoId}")" />
+                </div>
+
+                <div class="col-md-8">
+                    <h5>@item.Producto!.Titulo</h5>
+                    <p>@item.Producto!.Descripcion</p>
+                    <p>Cantidad: @item.Cantidad</p>
+                    <p>Subtotal: $@(item.Cantidad * item.Producto!.Precio)</p>
+                </div>
+
+                <div class="col-md-2 text-end">
+                    <form asp-action="Eliminar" method="post">
+                        <input type="hidden" name="id" value="@item.ProductoId" />
+                        <button class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="alert alert-primary text-end">
+        <h4>Total: $@total</h4>
+        <a class="btn btn-success">Comprar</a>
+    </div>
+}
