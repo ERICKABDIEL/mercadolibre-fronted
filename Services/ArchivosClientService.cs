@@ -7,7 +7,7 @@ public class ArchivosClientService(HttpClient client)
 {
     public async Task<List<Archivo>?> GetAsync()
     {
-        return await client.GetFromJsonAsync<List<Archivo>>("api/archivos");
+        return await client.GetFromJsonAsync<List<Archivo>>($"api/archivos");
     }
 
     public async Task<Archivo?> GetAsync(int id)
@@ -24,6 +24,7 @@ public class ArchivosClientService(HttpClient client)
 
         var fileContent = new ByteArrayContent(Contenido);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Archivo.Portada.ContentType);
+
         using var form = new MultipartFormDataContent
         {
             { fileContent, "file", Archivo.Portada.FileName! }
@@ -43,6 +44,7 @@ public class ArchivosClientService(HttpClient client)
 
         var fileContent = new ByteArrayContent(Cointenido);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(Archivo.Portada.ContentType);
+        
         using var form = new MultipartFormDataContent
         {
             { fileContent, "file", Archivo.Portada.FileName! }

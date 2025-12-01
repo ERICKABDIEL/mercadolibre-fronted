@@ -8,7 +8,7 @@ public class Usuario
     public string? Id { get; set; }
 
     [Required(ErrorMessage = "El campo {0} es obligatorio.")]
-    [EmailAddress(ErrorMessage = "El campo {0} no es correo válido.")]
+    [EmailAddress(ErrorMessage = "El campo {0} debe ser un correo electrónico válido.")]
     public required string Email
     { get; set; }
 

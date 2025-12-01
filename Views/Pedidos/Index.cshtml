@@ -1,7 +1,7 @@
-@model List<Bitacora>
+@model List<Pedido>
 @{
-    ViewData["Title"] = "Bitácora";
-    ViewData["SubTitle"] = "Listado";
+  ViewData["Title"] = "Pedidos";
+  ViewData["SubTitle"] = "Listado";
 }
 
 <nav aria-label="breadcrum">
@@ -25,16 +25,13 @@
       <thead class="text-center">
         <tr>
           <th>
-            @Html.DisplayNameFor(model => model.First().BitacoraId)
+            @Html.DisplayNameFor(model => model.First().PedidoId)
           </th>
           <th>
-            @Html.DisplayNameFor(model => model.First().Accion)
+            @Html.DisplayNameFor(model => model.First().Producto)
           </th>
           <th>
-            @Html.DisplayNameFor(model => model.First().ElementoId)
-          </th>
-          <th>
-            @Html.DisplayNameFor(model => model.First().IP)
+            @Html.DisplayNameFor(model => model.First().Total)
           </th>
           <th>
             @Html.DisplayNameFor(model => model.First().Usuario)
@@ -49,20 +46,32 @@
         {
           <tr>
             <td>
-              @Html.DisplayFor(modelItem => item.BitacoraId)
+              @Html.DisplayFor(modelItem => item.PedidoId)
             </td>
             <td>
-              @Html.DisplayFor(modelItem => item.Accion)
+              @if (item.Producto != null)
+              {
+                @Html.DisplayFor(modelItem => item.Producto.Titulo)
+              }
+              else
+              {
+                <span>No disponible</span>
+              }
             </td>
             <td>
-              @Html.DisplayFor(modelItem => item.ElementoId)
+              @Html.DisplayFor(modelItem => item.Total)
             </td>
             <td>
-              @Html.DisplayFor(modelItem => item.IP)
+              @if (item.Usuario != null)
+              {
+                @Html.DisplayFor(modelItem => item.Usuario.Email)
+              }
+              else
+              {
+                <span>No disponible</span>
+              }
             </td>
-            <td>
-              @Html.DisplayFor(modelItem => item.Usuario)
-            </td>
+
             <td>
               @TimeZoneInfo.ConvertTimeBySystemTimeZoneId(Convert.ToDateTime(item.Fecha), "America/Mexico_City")
             </td>

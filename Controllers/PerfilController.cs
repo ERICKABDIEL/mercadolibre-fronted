@@ -16,7 +16,6 @@ public class PerfilController(PerfilClientService perfil) : Controller
         {
             ViewBag.timeRemaining = await perfil.ObtenTiempoAsync();
 
-            //Obtiene el perfil del usuario
             usuario = new AuthUser
             {
                 Email = User.FindFirstValue(ClaimTypes.Name)!,

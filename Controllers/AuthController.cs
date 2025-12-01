@@ -25,18 +25,16 @@ public class AuthController(AuthClientService auth) : Controller
         {
             try 
             {
-                //Esta función verifica en backend que el correo y contraseña sean válidos
                 var token = await auth.ObtenTokenAsync(model.Email, model.Password);
                 var claims = new List<Claim>
                     {
-                        //Todo esto se guarda en la cookie
                         new(ClaimTypes.Name, token.Email), 
                         new(ClaimTypes.GivenName, token.Nombre), 
                         new("jwt", token.Jwt), 
                         new(ClaimTypes.Role, token.Rol), 
                     };
                 auth.IniciaSesionAsync(claims);
-                // Usuario válido
+                
                 if(token.Rol == "Administrador")
                     return RedirectToAction("Index", "Productos");
                 else

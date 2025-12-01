@@ -20,9 +20,10 @@
                         @Html.DisplayNameFor(model => model.First().CategoriaId)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model=>model.First().Nombre)
+                        @Html.DisplayNameFor(model => model.First().Nombre)
                     </th>
-                    <th></th>
+                    <th width="1">
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -39,7 +40,7 @@
                             <a class="text-decoration-none small text-uppercase" asp-action="CategoriasRemover"
                                 asp-route-id='@ViewData["ProductoId"]' asp-route-categoriaid="@item.CategoriaId">Eliminar</a>
                         </td>
-                    </tr>    
+                    </tr>
                 }
             </tbody>
         </table>

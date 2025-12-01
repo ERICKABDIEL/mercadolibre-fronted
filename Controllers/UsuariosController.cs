@@ -154,6 +154,6 @@ public class UsuariosController(UsuariosClientService usuarios, RolesClientServi
     private async Task RolesDropDownListAsync(object? rolSeleccionado = null)
     {
         var listado = await roles.GetAsync();
-        ViewBag.Rol = new SelectList(listado, "Id", "Nombre", rolSeleccionado);
+        ViewBag.Rol = new SelectList(listado, "Nombre", "Nombre", rolSeleccionado);
     }
 }

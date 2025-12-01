@@ -8,64 +8,116 @@ namespace frontendnet;
 [Authorize(Roles = "Usuario")]
 public class CarritoController : Controller
 {
-    private readonly ProductosClientService productosService;
+    private readonly CarritoClientService _carrito;
+    private readonly PedidosClientService _pedidos;
+    private readonly IConfiguration _config;
 
-    public CarritoController(ProductosClientService productosService)
+    public CarritoController(CarritoClientService carrito,
+                             PedidosClientService pedidos,
+                             IConfiguration config)
     {
-        this.productosService = productosService;
+        _carrito = carrito;
+        _pedidos = pedidos;
+        _config = config;
     }
 
     public async Task<IActionResult> Index()
     {
-        var carrito = HttpContext.Session.GetObject<List<CarritoItem>>("carrito")
-                    ?? new List<CarritoItem>();
+        List<Producto>? lista = [];
 
-        foreach (var item in carrito)
+        try
         {
-            item.Producto = await productosService.ObtenerProductoAsync(item.ProductoId);
+            lista = await _carrito.ObtenerCarrito();
         }
-
-        return View(carrito);
-    }
-
-
-    [HttpPost]
-    public IActionResult Agregar(int productoId)
-    {
-        var carrito = HttpContext.Session.GetObject<List<CarritoItem>>("carrito")
-                       ?? new List<CarritoItem>();
-
-        var item = carrito.FirstOrDefault(x => x.ProductoId == productoId);
-
-        if (item != null)
+        catch (HttpRequestException ex)
         {
-            item.Cantidad++;
-        }
-        else
-        {
-            carrito.Add(new CarritoItem
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                ProductoId = productoId,
-                Cantidad = 1
-            });
+                return RedirectToAction("Salir", "Auth");
+            }
         }
 
-        HttpContext.Session.SetObject("carrito", carrito);
-        return RedirectToAction("Index");
+        // NECESARIO PARA QUE _CardPartial CARGUE LA IMAGEN
+        ViewBag.Url = _config["UrlWebAPI"];
+
+        return View(lista);
+    }
+
+    public IActionResult SeguirComprando()
+    {
+        return RedirectToAction("Index", "Comprar");
+    }
+
+    public async Task<IActionResult> LimpiarCarrito()
+    {
+        var carritoItems = await _carrito.ObtenerCarrito();
+        if (carritoItems == null || carritoItems.Count == 0)
+        {
+            TempData["CarritoVacio"] = true;
+            return RedirectToAction("Index", "Carrito");
+        }
+
+        try
+        {
+            await _carrito.LimpiarCarrito();
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return RedirectToAction("Salir", "Auth");
+            }
+        }
+
+        return RedirectToAction("Index", "Carrito");
+    }
+
+    public async Task<IActionResult> FinalizarCompra()
+    {
+        var carritoItems = await _carrito.ObtenerCarrito();
+        if (carritoItems == null || carritoItems.Count == 0)
+        {
+            TempData["CarritoVacio"] = true;
+            return RedirectToAction("Index", "Carrito");
+        }
+
+        try
+        {
+            var userName = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                return RedirectToAction("Salir", "Auth");
+            }
+            
+            await _pedidos.PostAsync(userName);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return RedirectToAction("Salir", "Auth");
+            }
+        }
+
+        return RedirectToAction("Index", "Comprar");
     }
 
     [HttpPost]
-    public IActionResult Eliminar(int id)
+    public async Task<IActionResult> EliminarDelCarrito(int id)
     {
-        var carrito = HttpContext.Session.GetObject<List<CarritoItem>>("carrito")
-                       ?? new List<CarritoItem>();
+        try
+        {
+            await _carrito.EliminarDelCarrito(id);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return RedirectToAction("Salir", "Auth");
+            }
+        }
 
-        var item = carrito.FirstOrDefault(x => x.ProductoId == id);
-        if (item != null)
-            carrito.Remove(item);
-
-        HttpContext.Session.SetObject("carrito", carrito);
-
-        return RedirectToAction("Index");
+        return RedirectToAction("Index", "Carrito");
     }
 }

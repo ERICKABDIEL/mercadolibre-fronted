@@ -6,72 +6,37 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// === SESIÓN ===
-builder.Services.AddSession();
-builder.Services.AddHttpContextAccessor();
-
 var UrlWebAPI = builder.Configuration["UrlWebAPI"];
-
-// Delegating handlers
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<EnviaBearerDelegatingHandler>();
 builder.Services.AddTransient<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<AuthClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); });
+builder.Services.AddHttpClient<CategoriasClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<UsuariosClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<PedidosClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<RolesClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<ProductosClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<PerfilClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<ArchivosClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<BitacoraClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); })
+    .AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
+    .AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
+builder.Services.AddHttpClient<ClientesClientService>(httpClient => { httpClient.BaseAddress = new Uri(UrlWebAPI!); } );
 
-// === HTTP CLIENTS ===
-builder.Services.AddHttpClient<AuthClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-});
-
-builder.Services.AddHttpClient<CategoriasClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-})
-.AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
-.AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
-
-builder.Services.AddHttpClient<UsuariosClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-})
-.AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
-.AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
-
-builder.Services.AddHttpClient<RolesClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-})
-.AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
-.AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
-
-builder.Services.AddHttpClient<ProductosClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-})
-.AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
-.AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
-
-builder.Services.AddHttpClient<PerfilClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-})
-.AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
-.AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
-
-builder.Services.AddHttpClient<ArchivosClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-})
-.AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
-.AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
-
-builder.Services.AddHttpClient<BitacoraClientService>(httpClient =>
-{
-    httpClient.BaseAddress = new Uri(UrlWebAPI!);
-})
-.AddHttpMessageHandler<EnviaBearerDelegatingHandler>()
-.AddHttpMessageHandler<RefrescaTokenDelegatingHandler>();
-
-// === AUTENTICACIÓN ===
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -82,21 +47,27 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     });
 
+builder.Services.AddSingleton<CarritoClientService>();
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler("/Home/Error");
 
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// === activar sesión antes de auth ===
-app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 
-// === rutas ===
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
